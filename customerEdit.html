@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">  
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>CustomerEdit</title>
+        <style>
+            .error-message{
+                color: red;
+            }
+        </style>
+        <script>
+            function navigateToList(){
+                window.location.href = '/';
+            }
+        </script>
+    </head> 
+    <body>
+        <h1>Edit Customer</h1>
+
+        <form id="inputForm">
+          <label for="name">Name: </label>
+          <input id="name" type="text" maxlength="100" >
+          <br><br>
+          <label for="ic">IC Number: </label>
+          <input id="ic" type="text" >
+          <div id="errorMessageIC" class="error-message"></div>
+          <br><br>
+          <label for="dob">Date of Birth: </label>
+          <input id="dob" type="date" >
+          <div id="errorMessageDob" class="error-message"></div>
+          <br><br>
+          <label for="address">Address: </label>
+          <input id="address" type="text" maxlength="100" >
+          <br><br>
+          <label for="addressCountry">Address Country: </label>
+          <select id="addressCountry">
+              <option>Malaysia</option>
+              <option>Singapore</option>
+          </select>
+          <br><br>
+          <label for="addressPostcode">Address Postcode: </label>
+          <input id="addressPostcode" type="text" >
+          <div id="errorMessageAP" class="error-message"></div>
+          <br><br>
+          <input type="submit" value="Save" >
+        </form>
+        <br><br>
+        <button onclick="navigateToList()">Back</button>
+
+        <script>
+            const form = document.getElementById('inputForm');
+
+            const validateDigit = (input, errorMessage) => {
+                if (input.value != ''){
+                    const inputValue = input.value.trim();
+                    if (/^\d{1,14}$/.test(inputValue)) {
+                        errorMessage.textContent = '';
+                    } else {
+                        errorMessage.textContent = 'Please enter digits only';
+                        event.preventDefault();
+                    }
+                }
+            }
+            
+            form.addEventListener('submit', function(event){
+
+                const inputIC = document.getElementById('ic');
+                validateDigit(inputIC, errorMessageIC);
+
+                const inputDate = document.getElementById('dob');
+                if (inputDate.value != ''){
+                    const inputDateValue = new Date(inputDate.value).getFullYear();
+                    const currentDate = new Date().getFullYear();
+                    const ageDiff = currentDate - inputDateValue;
+                    if (ageDiff > 18){
+                        errorMessageDob.textContent = '';
+                    }
+                    else{
+                        errorMessageDob.textContent = 'Must be above 18 years old';
+                        event.preventDefault();
+                    }
+                }
+
+                const inputAddressPostcode = document.getElementById('addressPostcode');
+                validateDigit(inputAddressPostcode, errorMessageAP);
+            })
+        </script>
+    </body>
+</html>
