@@ -1,29 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CustomerList</title>
+    <style>
+        .error-message {
+            color: red;
+        }
+    </style>
     <script>
-        function navigateTo(page){
+        function navigateTo(page) {
             window.location.href = '/' + page;
         }
     </script>
-  </head>
-  <body>
-    <h1>List Customer</h1>
-    <form>
-      <label for="name">Name: </label>
-      <input type="text" maxlength="100" />
-      <br><br>
-      <label for="ic">IC Number: </label>
-      <input type="text" pattern="\d{0,14}" />
-      <br><br>
-      <input type="submit" value="List" />
+</head>
+
+<body>
+    <h1>Search Customer Page</h1>
+    <form id="inputForm">
+        <label for="name">Name: </label>
+        <input id="name" type="text" maxlength="100" required />
+        <br><br>
+        <label for="ic">IC Number: </label>
+        <input id="ic" type="text" required />
+        <div id="errorMessageIC" class="error-message"></div>
+        <br><br>
+        <input type="submit" value="Search" />
     </form>
     <br><br>
-    <button onclick="navigateTo('addPage')">Add</button>
+    <button onclick="listAllCustomer()">List all customers</button>
     <br><br>
-    <button onclick="navigateTo('editPage')">Edit</button>
-  </body>
+    <button onclick="navigateTo('addPage')">Navigate to Add Customer Page</button>
+    <br><br>
+    <button onclick="navigateTo('editPage')">Navigate to Edit Customer Page</button>
+    <br><br>
+    <div>
+        <h2>Customer Details</h2>
+        <table id="customerTable">
+            <thead id="customerHead">
+                <tr>
+                    <th>Name</th>
+                    <th>IC Number</th>
+                    <th>Date of Birth</th>
+                    <th>Address</th>
+                    <th>Country</th>
+                    <th>Postcode</th>
+                </tr>
+            </thead>
+            <tbody id="customerBody">
+            </tbody>
+        </table>
+    </div>
+    <script>
+        const form = document.getElementById('inputForm');
+
+        const validateDigit = (input, errorMessage) => {
+            if (input.value != '') {
+                const inputValue = input.value.trim();
+                if (/^\d{1,14}$/.test(inputValue)) {
+                    errorMessage.textContent = '';
+                    return true;
+                } else {
+                    errorMessage.textContent = 'Please enter digits only';
+                    event.preventDefault();
+                    return false;
+                }
+            }
+        }
+
+        const tabulateDate = (table, data) => {
+            const tr = document.createElement('tr');
+
+            const tdName = document.createElement('td');
+            tdName.innerText = data.name;
+
+            const tdIC = document.createElement('td');
+            tdIC.innerText = data.ic;
+
+            const tdDob = document.createElement('td');
+            tdDob.innerText = data.date_of_birth;
+
+            const tdAddr = document.createElement('td');
+            tdAddr.innerText = data.address;
+
+            const tdAddrCountry = document.createElement('td');
+            tdAddrCountry.innerText = data.address_country;
+
+            const tdAddrPostcode = document.createElement('td');
+            tdAddrPostcode.innerText = data.address_postcode;
+
+            tr.appendChild(tdName);
+            tr.appendChild(tdIC);
+            tr.appendChild(tdDob);
+            tr.appendChild(tdAddr);
+            tr.appendChild(tdAddrCountry);
+            tr.appendChild(tdAddrPostcode);
+
+            table.appendChild(tr);
+        }
+
+        const searchCustomer = () => {
+            const name = document.getElementById('name').value;
+            const ic = document.getElementById('ic').value;
+
+            const customerData = {
+                name: name,
+                ic: ic,
+            }
+            console.log(customerData)
+
+            fetch('/api/searchCustomer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(customerData)
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error('Network error');
+                }
+                return response.json();
+            }).then(data => {
+                console.log('data')
+                console.log(data)
+                if (data.success) {
+                    const customers = data.customers;
+                    const table = document.getElementById('customerBody')
+                    customers.forEach(cust => tabulateDate(table, cust));
+                }
+            }).catch(error => {
+                console.log('Error: ', error)
+            })
+
+        }
+
+        const listAllCustomer = () => {
+            fetch('/api/listAllCustomer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error('Network error');
+                }
+                return response.json();
+            }).then(data => {
+                console.log('data')
+                console.log(data)
+                if (data.success) {
+                    const customers = data.customers;
+                    const table = document.getElementById('customerBody')
+                    customers.forEach(cust => tabulateDate(table, cust));
+                }
+            }).catch(error => {
+                console.log('Error: ', error)
+            })
+
+        }
+
+        form.addEventListener('submit', function (event) {
+
+            const inputIC = document.getElementById('ic');
+            if (validateDigit(inputIC, errorMessageIC)) {
+                searchCustomer();
+            }
+            event.preventDefault();
+        })
+    </script>
+</body>
+
 </html>
